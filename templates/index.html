@@ -1,0 +1,612 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#030605">
+<title>#FAMILY // GHOST PROTOCOL</title>
+
+<style>
+:root {
+  --green: #63ff9b;
+  --darkgreen: #123c28;
+  --red: #ff354d;
+  --bg: #030605;
+}
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--green);
+  font-family: "Courier New", monospace;
+  min-height: 100vh;
+  overflow-x: hidden;
+}
+body::before {
+  content: "";
+  position: fixed;
+  inset: 0;
+  z-index: 5;
+  pointer-events: none;
+  opacity: .18;
+  background: repeating-linear-gradient(
+    to bottom, transparent 0px, transparent 3px,
+    #63ff9b12 4px
+  );
+}
+#matrix {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: .13;
+  pointer-events: none;
+}
+.vignette {
+  position: fixed;
+  inset: 0;
+  pointer-events: none;
+  background: radial-gradient(ellipse, transparent 30%, #000b 100%);
+}
+main {
+  position: relative;
+  z-index: 2;
+  width: min(900px, 100%);
+  margin: auto;
+  padding: 18px;
+}
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  flex-wrap: wrap;
+  font-size: 10px;
+  letter-spacing: 2px;
+  color: #69b783;
+  border-bottom: 1px solid #225238;
+  padding: 12px 0;
+}
+.dot {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  background: var(--green);
+  border-radius: 50%;
+  box-shadow: 0 0 10px var(--green);
+  margin-right: 7px;
+  animation: pulse 1.3s infinite;
+}
+.hero {
+  padding: 36px 0 25px;
+  text-align: center;
+}
+.eyebrow {
+  font-size: 11px;
+  letter-spacing: 5px;
+  color: #72a985;
+}
+h1 {
+  font-size: clamp(32px, 8vw, 70px);
+  line-height: 1;
+  letter-spacing: 4px;
+  margin: 22px 0 12px;
+  text-shadow: 0 0 10px #36ff7960, 0 0 35px #36ff7920;
+}
+.subtitle {
+  font-size: 11px;
+  letter-spacing: 3px;
+  color: #77a98a;
+}
+.panel {
+  border: 1px solid #24573a;
+  background: #06100bd9;
+  box-shadow: 0 0 35px #00ff4410, inset 0 0 25px #00ff4405;
+  padding: 18px;
+  position: relative;
+}
+.panel::before, .panel::after {
+  content: "";
+  position: absolute;
+  width: 18px;
+  height: 18px;
+  border-color: var(--green);
+  border-style: solid;
+}
+.panel::before {
+  top: -1px; left: -1px;
+  border-width: 2px 0 0 2px;
+}
+.panel::after {
+  bottom: -1px; right: -1px;
+  border-width: 0 2px 2px 0;
+}
+.section-title {
+  font-size: 10px;
+  letter-spacing: 3px;
+  color: #77a98a;
+  margin-bottom: 14px;
+}
+.layout {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 130px;
+  gap: 18px;
+}
+#logs {
+  height: 220px;
+  overflow: hidden;
+  font-size: 12px;
+  line-height: 1.8;
+  overflow-wrap: anywhere;
+}
+.log {
+  animation: appear .25s ease-out;
+}
+.ok { color: var(--green); }
+.dim { color: #648a70; }
+.warn { color: #ffca69; }
+.bad { color: var(--red); }
+.cursor {
+  display: inline-block;
+  width: 7px;
+  height: 13px;
+  background: var(--green);
+  vertical-align: middle;
+  animation: blink .8s steps(2) infinite;
+}
+.radar-wrap {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.radar {
+  width: 120px;
+  aspect-ratio: 1;
+  border: 1px solid #286343;
+  border-radius: 50%;
+  position: relative;
+  overflow: hidden;
+  background:
+    linear-gradient(90deg, transparent 49.5%, #286343 50%, transparent 50.5%),
+    linear-gradient(transparent 49.5%, #286343 50%, transparent 50.5%),
+    repeating-radial-gradient(circle, transparent 0 17px, #28634380 18px 19px);
+}
+.radar::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: conic-gradient(from 0deg, transparent 72%, #63ff9b55);
+  border-radius: 50%;
+  animation: spin 3s linear infinite;
+}
+.radar::after {
+  content: "";
+  position: absolute;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  background: var(--green);
+  box-shadow: 0 0 10px var(--green);
+  left: 68%;
+  top: 32%;
+}
+.stats {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+  margin-top: 15px;
+}
+.stat {
+  border: 1px solid #173d28;
+  padding: 12px 8px;
+  background: #040a07;
+}
+.stat label {
+  display: block;
+  font-size: 9px;
+  color: #6a9b7b;
+  margin-bottom: 8px;
+}
+.stat strong {
+  font-size: 16px;
+  font-weight: normal;
+}
+.progress-head {
+  display: flex;
+  justify-content: space-between;
+  font-size: 10px;
+  margin: 18px 0 8px;
+  color: #83bb94;
+}
+.track {
+  height: 4px;
+  background: #153221;
+  overflow: hidden;
+}
+#progress {
+  height: 100%;
+  width: 0;
+  background: var(--green);
+  box-shadow: 0 0 12px var(--green);
+  transition: width .4s;
+}
+#status {
+  font-size: 11px;
+  margin: 18px 0 0;
+  letter-spacing: 1px;
+  min-height: 16px;
+}
+button {
+  display: none;
+  width: 100%;
+  padding: 17px;
+  margin-top: 20px;
+  color: #031008;
+  background: var(--green);
+  border: 0;
+  font: bold 12px "Courier New", monospace;
+  letter-spacing: 2px;
+  cursor: pointer;
+  box-shadow: 0 0 22px #63ff9b20;
+}
+button:active { transform: scale(.99); }
+button:focus-visible { outline: 2px solid white; }
+#player {
+  display: none;
+  margin-top: 20px;
+}
+.player-frame {
+  border: 1px solid #34754d;
+  padding: 5px;
+  background: #000;
+}
+.player-head {
+  display: flex;
+  justify-content: space-between;
+  gap: 8px;
+  flex-wrap: wrap;
+  font-size: 10px;
+  padding: 8px 2px 12px;
+  color: #83c597;
+}
+video {
+  display: block;
+  width: 100%;
+  max-height: 65vh;
+  background: #000;
+}
+#ending {
+  display: none;
+  text-align: center;
+  padding: 38px 10px 25px;
+}
+.denied {
+  color: var(--red);
+  font-size: clamp(32px, 9vw, 68px);
+  font-weight: bold;
+  letter-spacing: 4px;
+  text-shadow: 3px 0 #ff354d55, -3px 0 #00ff9955;
+}
+.glitch {
+  animation: glitch .35s steps(2) 5;
+}
+.endline {
+  font-size: 11px;
+  color: #b04c59;
+  line-height: 2;
+  margin-top: 18px;
+}
+.footer {
+  padding: 22px 0 12px;
+  text-align: center;
+  color: #416d50;
+  font-size: 10px;
+  letter-spacing: 2px;
+}
+#flash {
+  position: fixed;
+  inset: 0;
+  background: white;
+  opacity: 0;
+  pointer-events: none;
+  z-index: 10;
+}
+body.locked {
+  --green: #ff354d;
+}
+body.locked .panel {
+  border-color: #68202a;
+}
+body.locked .dot {
+  background: var(--red);
+  box-shadow: 0 0 10px var(--red);
+}
+@keyframes pulse {
+  50% { opacity: .35; }
+}
+@keyframes blink {
+  50% { opacity: 0; }
+}
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+@keyframes appear {
+  from { opacity: 0; transform: translateX(-5px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+@keyframes glitch {
+  0% { transform: translateX(0); clip-path: inset(0); }
+  25% { transform: translateX(-4px); clip-path: inset(20% 0 55%); }
+  50% { transform: translateX(4px); clip-path: inset(55% 0 15%); }
+  75% { transform: translateX(-2px); clip-path: inset(35% 0 40%); }
+  100% { transform: translateX(0); clip-path: inset(0); }
+}
+@media(max-width:560px) {
+  main { padding: 12px; }
+  .panel { padding: 13px; }
+  .layout { grid-template-columns: 1fr; }
+  .radar-wrap { display: none; }
+  #logs { height: 190px; }
+  .stats { gap: 5px; }
+  .stat { padding: 10px 6px; }
+  .stat strong { font-size: 13px; }
+}
+@media(prefers-reduced-motion:reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
+}
+</style>
+</head>
+
+<body>
+<canvas id="matrix"></canvas>
+<div class="vignette"></div>
+<div id="flash"></div>
+
+<main>
+  <header class="topbar">
+    <span><i class="dot"></i>FAMILY NETWORK</span>
+    <span id="clock">NODE // --:--:--</span>
+    <span id="connection">LINK: STANDBY</span>
+  </header>
+
+  <section class="hero">
+    <div class="eyebrow">PRIVATE ACCESS PROTOCOL</div>
+    <h1>GHOST<br>PROTOCOL<span class="cursor"></span></h1>
+    <div class="subtitle">O SISTEMA NAO E INQUEBRAVEL.</div>
+  </section>
+
+  <section class="panel">
+    <div class="section-title">// LIVE SYSTEM DIAGNOSTICS</div>
+
+    <div class="layout">
+      <div>
+        <div id="logs"></div>
+        <span class="cursor"></span>
+      </div>
+      <div class="radar-wrap">
+        <div class="radar"></div>
+      </div>
+    </div>
+
+    <div class="stats">
+      <div class="stat">
+        <label>ENCRYPTION</label>
+        <strong id="encryption">---</strong>
+      </div>
+      <div class="stat">
+        <label>NODE STATUS</label>
+        <strong id="node">BOOT</strong>
+      </div>
+      <div class="stat">
+        <label>THREAT LEVEL</label>
+        <strong id="threat">---</strong>
+      </div>
+    </div>
+
+    <div class="progress-head">
+      <span id="progressLabel">ANALYZING SYSTEM</span>
+      <span id="percent">00%</span>
+    </div>
+    <div class="track"><div id="progress"></div></div>
+    <p id="status">INITIALIZING GHOST PROTOCOL...</p>
+
+    <button id="start">[ INITIATE TRANSMISSION ]</button>
+
+    <section id="player">
+      <div class="player-frame">
+        <div class="player-head">
+          <span>#FAMILY // ENCRYPTED TRANSMISSION</span>
+          <span><i class="dot"></i> LIVE FEED</span>
+        </div>
+        <video id="video" controls playsinline preload="metadata">
+          <source src="/static/trailer.mp4" type="video/mp4">
+          Seu navegador nao conseguiu carregar o video.
+        </video>
+      </div>
+      <div class="progress-head">
+        <span>TRANSMISSION CHANNEL</span>
+        <span>ENCRYPTED</span>
+      </div>
+    </section>
+
+    <section id="ending">
+      <div class="denied" id="denied">ACCESS DENIED</div>
+      <div class="endline" id="endline">
+        [SYSTEM] SESSION TERMINATED<br>
+        [AUTH] TOKEN INVALIDATED<br>
+        [FAMILY] CONNECTION CLOSED
+      </div>
+    </section>
+  </section>
+
+  <footer class="footer">
+    #FAMILY // GHOST PROTOCOL<br>
+    <span style="display:block;margin-top:8px">
+      O SISTEMA NAO E PERFEITO // O SISTEMA NAO E INQUEBRAVEL
+    </span>
+  </footer>
+</main>
+
+<script>
+const $ = id => document.getElementById(id);
+const logs = $("logs");
+const statusText = $("status");
+const progress = $("progress");
+const percent = $("percent");
+const start = $("start");
+const player = $("player");
+const video = $("video");
+const ending = $("ending");
+
+let finished = false;
+let progressValue = 0;
+
+function log(message, type = "ok") {
+  const line = document.createElement("div");
+  line.className = "log " + type;
+  line.textContent = message;
+  logs.appendChild(line);
+  while (logs.children.length > 8) logs.firstChild.remove();
+}
+
+function setProgress(value) {
+  progressValue = value;
+  progress.style.width = value + "%";
+  percent.textContent = String(value).padStart(2, "0") + "%";
+}
+
+function updateClock() {
+  $("clock").textContent = "NODE // " +
+    new Date().toLocaleTimeString("pt-BR", {hour12:false});
+}
+setInterval(updateClock, 1000);
+updateClock();
+
+/* Fundo digital */
+const canvas = $("matrix");
+const ctx = canvas.getContext("2d");
+let columns = [];
+let fontSize = 13;
+
+function resizeMatrix() {
+  const dpr = Math.min(window.devicePixelRatio || 1, 2);
+  canvas.width = window.innerWidth * dpr;
+  canvas.height = window.innerHeight * dpr;
+  canvas.style.width = window.innerWidth + "px";
+  canvas.style.height = window.innerHeight + "px";
+  ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+  columns = Array(Math.ceil(window.innerWidth / fontSize)).fill(0);
+}
+window.addEventListener("resize", resizeMatrix);
+resizeMatrix();
+
+const chars = "01ABCDEF#$%";
+function drawMatrix() {
+  ctx.fillStyle = "rgba(3,6,5,0.12)";
+  ctx.fillRect(0, 0, window.innerWidth, window.innerHeight);
+  ctx.fillStyle = "#37a966";
+  ctx.font = fontSize + "px monospace";
+  columns.forEach((y, i) => {
+    const char = chars[Math.floor(Math.random() * chars.length)];
+    ctx.fillText(char, i * fontSize, y * fontSize);
+    if (y * fontSize > window.innerHeight && Math.random() > .975) {
+      columns[i] = 0;
+    } else {
+      columns[i]++;
+    }
+  });
+  requestAnimationFrame(drawMatrix);
+}
+drawMatrix();
+
+/* Sequencia de inicializacao */
+const sequence = [
+  {text:"[BOOT] Initializing ghost kernel...", p:8, delay:650},
+  {text:"[NET] Establishing secure tunnel...", p:19, delay:800},
+  {text:"[SCAN] Mapping virtual environment...", p:33, delay:950},
+  {text:"[SCAN] Checking access points...", p:46, delay:750},
+  {text:"[WARN] Firewall signature detected.", p:61, delay:1000, type:"warn"},
+  {text:"[AUTH] Verifying identity token...", p:75, delay:900},
+  {text:"[AUTH] Identity accepted.", p:91, delay:800},
+  {text:"[ACCESS] ACCESS GRANTED", p:100, delay:600}
+];
+
+function runSequence(index = 0) {
+  if (finished) return;
+
+  if (index >= sequence.length) {
+    $("encryption").textContent = "AES-256";
+    $("node").textContent = "READY";
+    $("threat").textContent = "HIGH";
+    $("connection").textContent = "LINK: READY";
+    statusText.textContent = "AUTHORIZED TRANSMISSION AVAILABLE.";
+    $("progressLabel").textContent = "SYSTEM ANALYSIS COMPLETE";
+    start.style.display = "block";
+    return;
+  }
+
+  const item = sequence[index];
+  log(item.text, item.type || "ok");
+  setProgress(item.p);
+  $("node").textContent = index < 3 ? "SCAN" : "AUTH";
+  $("encryption").textContent = index < 4 ? "CHECK" : "ACTIVE";
+  $("threat").textContent = index < 4 ? "SCAN" : "DETECTED";
+  statusText.textContent = "PROCESSING SECURITY LAYER " +
+    String(index + 1).padStart(2, "0");
+
+  setTimeout(() => runSequence(index + 1), item.delay);
+}
+
+/* Inicia o video */
+start.addEventListener("click", () => {
+  start.style.display = "none";
+  player.style.display = "block";
+  $("progressLabel").textContent = "TRANSMISSION IN PROGRESS";
+  statusText.textContent = "ENCRYPTED TRANSMISSION OPEN.";
+  $("connection").textContent = "LINK: ACTIVE";
+  $("node").textContent = "STREAM";
+
+  player.scrollIntoView({behavior:"smooth", block:"center"});
+  video.play().catch(() => {
+    statusText.textContent = "TAP PLAY TO START TRANSMISSION.";
+  });
+});
+
+/* Encerramento cinematografico */
+video.addEventListener("ended", () => {
+  if (finished) return;
+  finished = true;
+
+  video.pause();
+  document.body.classList.add("locked");
+  $("flash").style.transition = "opacity .08s";
+  $("flash").style.opacity = ".8";
+
+  setTimeout(() => {
+    $("flash").style.opacity = "0";
+    player.style.display = "none";
+    ending.style.display = "block";
+    $("denied").classList.add("glitch");
+    $("progressLabel").textContent = "SESSION TERMINATED";
+    statusText.textContent = "CONNECTION CLOSED.";
+    $("connection").textContent = "LINK: TERMINATED";
+    $("node").textContent = "LOCKED";
+    $("threat").textContent = "CRITICAL";
+    setProgress(100);
+    logs.replaceChildren();
+    log("[SYSTEM] Session terminated.", "bad");
+    log("[AUTH] Access token invalidated.", "bad");
+    log("[FAMILY] Connection closed.", "dim");
+    ending.scrollIntoView({behavior:"smooth", block:"center"});
+  }, 180);
+});
+
+setTimeout(() => runSequence(), 600);
+</script>
+</body>
+</html>
+
