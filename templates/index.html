@@ -362,6 +362,7 @@ body.locked .dot {
 </head>
 
 <body>
+<script>window.SERVER_SITE_LOCKED = {{ site_locked|tojson }};</script>
 <canvas id="matrix"></canvas>
 <div class="vignette"></div>
 <div id="flash"></div>
@@ -577,9 +578,20 @@ start.addEventListener("click", () => {
 });
 
 /* Encerramento cinematografico */
-video.addEventListener("ended", () => {
+video.addEventListener("ended", async () => {
   if (finished) return;
   finished = true;
+
+  try {
+    const response = await fetch("/api/lock-after-trailer", {
+      method: "POST"
+    });
+    if (!response.ok) {
+      console.error("N??o foi poss??vel registrar o bloqueio global.");
+    }
+  } catch (error) {
+    console.error("Falha ao comunicar o bloqueio ao servidor:", error);
+  }
 
   video.pause();
   document.body.classList.add("locked");
@@ -605,7 +617,39 @@ video.addEventListener("ended", () => {
   }, 180);
 });
 
-setTimeout(() => runSequence(), 600);
+async function checkServerLock() {
+  try {
+    const response = await fetch("/api/status", { cache: "no-store" });
+    if (!response.ok) throw new Error("Status indispon??vel");
+
+    const state = await response.json();
+    if (state.locked || window.SERVER_SITE_LOCKED === true) {
+      finished = true;
+      document.body.classList.add("locked");
+      start.style.display = "none";
+      player.style.display = "none";
+      ending.style.display = "block";
+      $("progressLabel").textContent = "SESSION TERMINATED";
+      statusText.textContent = "CONNECTION CLOSED.";
+      $("connection").textContent = "LINK: TERMINATED";
+      $("node").textContent = "LOCKED";
+      $("threat").textContent = "CRITICAL";
+      setProgress(100);
+      logs.replaceChildren();
+      log("[SYSTEM] Session terminated.", "bad");
+      log("[AUTH] Access denied.", "bad");
+      log("[FAMILY] Connection closed.", "dim");
+      return;
+    }
+
+    runSequence();
+  } catch (error) {
+    console.error("N??o foi poss??vel verificar o estado do site:", error);
+    statusText.textContent = "SERVER STATUS UNAVAILABLE.";
+  }
+}
+
+setTimeout(() => checkServerLock(), 600);
 </script>
 </body>
 </html>
